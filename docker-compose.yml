@@ -1,0 +1,49 @@
+version: "3.6"
+services:
+
+  database:
+    image: postgres:12-alpine
+    restart: "on-failure"
+    ports:
+      - 7082:5432
+    volumes:
+      - database:/data/postgres
+    environment:
+      - PGDATA=/data/database
+      - POSTGRES_DB=star_wars
+      - POSTGRES_USER=star_wars_user
+      - POSTGRES_PASSWORD=star_wars_password
+
+  back:
+    build: "back"
+    ports:
+      - 4000:4000
+    restart: "on-failure"
+    volumes:
+      - "/app/node_modules"
+      - "./back:/app"
+    depends_on:
+      - database
+    environment:
+      - API_ENTRYPOINT=https://swapi.dev/api
+      - JWT_SECRET=MyBestSecret
+      - DATABASE_URL=postgres://star_wars_user:star_wars_password@database:5432/star_wars
+
+  front:
+    build: "front"
+    restart: "on-failure"
+    tty: true
+    stdin_open: true
+    volumes:
+      - "/app/node_modules"
+      - "./front:/app"
+    ports:
+      - 3000:3000
+    environment:
+      - REACT_APP_API_ENTRYPOINT=http://localhost:4000
+    depends_on:
+      - back
+
+
+volumes:
+  database:

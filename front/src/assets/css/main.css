@@ -1,0 +1,27 @@
+*,
+*::after,
+*::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: inherit;
+}
+
+body {
+  box-sizing: border-box;
+}
+
+.d-flex-center-both {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.custom-ul {
+  list-style: none;
+}
+
+.d-flex-column {
+  display: flex !important;
+  flex-direction: column !important;
+}

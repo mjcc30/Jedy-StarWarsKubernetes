@@ -1,0 +1,7 @@
+const SuggestionsActionsTypes = {
+    FETCH_SUGGESTIONS_SUCCESS: 'FETCH_SUGGESTIONS_SUCCESS',
+    USER_INPUT_EMPTY: 'USER_INPUT_EMPTY',
+    FETCH_SUGGESTIONS_ERROR: 'FETCH_SUGGESTIONS_ERROR',
+};
+
+export default SuggestionsActionsTypes;
