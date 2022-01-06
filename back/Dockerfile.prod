@@ -1,0 +1,9 @@
+FROM node:alpine
+WORKDIR "/app"
+ARG API_ENTRYPOINT=https://swapi.dev/api
+ARG JWT_SECRET=MyBestSecret
+ARG DATABASE_URL="database url de prod"
+COPY package.json .
+RUN npm install
+COPY . .
+CMD ["npm", "prod"]
