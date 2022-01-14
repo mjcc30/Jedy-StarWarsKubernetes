@@ -24,7 +24,10 @@ exports.getSwapiSearch = (req, res, next) => {
             }
             return res.status(200).json(results);
         })
-        .catch(err => res.status(400).send(err));
+        .catch(err => {
+          console.log(err)
+          res.status(400).send(err)
+        });
 };
 
 exports.getSwappiById = (req, res, url) => {

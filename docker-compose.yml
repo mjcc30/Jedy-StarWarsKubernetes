@@ -27,7 +27,11 @@ services:
     environment:
       - API_ENTRYPOINT=https://swapi.dev/api
       - JWT_SECRET=MyBestSecret
-      - DATABASE_URL=postgres://star_wars_user:star_wars_password@database:5432/star_wars
+      - PGDATABASE=star_wars
+      - PGUSER=star_wars_user
+      - PGPASSWORD=star_wars_password
+      - PGHOST=database
+      - PGPORT=5432
 
   front:
     build: "front"
