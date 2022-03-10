@@ -1,0 +1,40 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: front
+  template:
+    metadata:
+      labels:
+        component: front
+    spec:
+      containers:
+        - name: client
+          image: elie91/starwars-front
+          ports:
+            - containerPort: 3000
+          env:
+            - name: REACT_APP_API_ENTRYPOINT
+              value: '/api'
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-cluster-ip-service
+spec:
+  type: ClusterIP
+  # Match le sélecteur spécifié dans le Deployment front
+  selector:
+    component: front
+  # Expose le port 3000
+  ports:
+    - port: 3000
+      targetPort: 3000
+
+--- 

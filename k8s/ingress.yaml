@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-service
+  annotations:
+    # Crée un Ingress Controller basé sur Nginx
+    kubernetes.io/ingress.class: 'nginx'
+    # http://localhost:4000/api/users > http://localhost:4000/users
+    # Récris l'URL pour supprimer le /api lorsque front fait une requête à /api/users par exemple
+    nginx.ingress.kubernetes.io/use-regex: 'true'
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+spec:
+  rules:
+   # Règles à définir pour le site local en HTTP
+    - http:
+        paths:
+          # Pour toutes les URL contenant / (exemple /login)
+          - path: /?(.*)
+            pathType: Prefix
+            # Spécifie le backend qui va se charger de la requête
+            backend:
+              service:
+                name: front-cluster-ip-service
+                port:
+                  number: 3000
+          # Pour toutes les URL contenant / (exemple /api)
+          - path: /api/?(.*)
+            pathType: Prefix
+            backend:
+              service:
+               # Pointe vers notre ClusterIp back
+                name: back-cluster-ip-service
+                port:
+                  number: 4000
