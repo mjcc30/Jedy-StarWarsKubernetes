@@ -4,19 +4,21 @@ from dotenv import load_dotenv
 import base64
 from io import BytesIO
 from PIL import Image
+import httpx
 
 load_dotenv()
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 if GOOGLE_API_KEY:
     genai.configure(api_key=GOOGLE_API_KEY)
 
 def is_ai_enabled():
-    return bool(GOOGLE_API_KEY)
+    return bool(GOOGLE_API_KEY or OPENROUTER_API_KEY)
 
 def get_text_model():
-    if not is_ai_enabled():
+    if not GOOGLE_API_KEY:
         return None
     try:
         # Updated to the latest fast model as of Nov 2025
@@ -26,7 +28,7 @@ def get_text_model():
         return None
 
 def get_image_model():
-    if not is_ai_enabled():
+    if not GOOGLE_API_KEY:
         return None
     try:
         # "Nano Banana" codename for Gemini 2.5 Flash Image
@@ -36,10 +38,6 @@ def get_image_model():
         return None
 
 async def chat_with_character(character_name: str, character_context: str, user_message: str):
-    model = get_text_model()
-    if not model:
-        return "I cannot speak right now. The Force is clouded."
-
     prompt = f"""
     You are {character_name} from Star Wars.
     Context about you: {character_context}
@@ -50,14 +48,47 @@ async def chat_with_character(character_name: str, character_context: str, user_
     User: {user_message}
     {character_name}:
     """
-    
-    try:
-        response = await model.generate_content_async(prompt)
-        return response.text.strip()
-    except Exception as e:
-        return f"Connection lost... ({str(e)})"
+
+    # 1. Try Google Gemini Native
+    if GOOGLE_API_KEY:
+        model = get_text_model()
+        if model:
+            try:
+                response = await model.generate_content_async(prompt)
+                return response.text.strip()
+            except Exception as e:
+                return f"Connection lost (Gemini)... ({str(e)})"
+
+    # 2. Try OpenRouter Fallback
+    if OPENROUTER_API_KEY:
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                        "HTTP-Referer": "http://localhost:3000",
+                        "X-Title": "Star Wars App",
+                    },
+                    json={
+                        "model": "google/gemini-2.0-flash-001",
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                    timeout=15.0
+                )
+                response.raise_for_status()
+                data = response.json()
+                if 'choices' in data and len(data['choices']) > 0:
+                    return data['choices'][0]['message']['content'].strip()
+                else:
+                    return "The Force yielded no answer (OpenRouter)."
+        except Exception as e:
+            return f"Connection lost (OpenRouter)... ({str(e)})"
+
+    return "I cannot speak right now. The Force is clouded (No API Key)."
 
 async def generate_image_nano_banana(entity_name: str, entity_type: str):
+    # Image generation currently supports only Native Google Gemini
     model = get_image_model()
     if not model:
         return None
