@@ -1,0 +1,19 @@
+{
+	"name": "Backend Dev Container",
+	"dockerComposeFile": [
+		"../../compose.yaml"
+	],
+	"service": "back",
+	"workspaceFolder": "/app",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python"
+			]
+		}
+	},
+	"forwardPorts": [
+		4000
+	],
+	"postCreateCommand": "uv pip install --system -r pyproject.toml"
+}

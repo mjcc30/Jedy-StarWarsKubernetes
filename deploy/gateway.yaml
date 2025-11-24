@@ -1,0 +1,17 @@
+# --- Configuration de la Gateway (Porte d'entrée) ---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: jedy-gateway
+  namespace: default
+spec:
+  # Spécifie la classe de Gateway à utiliser. 'eg' correspond à Envoy Gateway que nous avons installé.
+  # C'est ce lien qui dit à Kubernetes "Utilise Envoy pour gérer cette porte d'entrée".
+  gatewayClassName: eg 
+  listeners:
+  - name: http
+    protocol: HTTP
+    port: 80 # Le port exposé sur votre localhost (via le LoadBalancer du cluster)
+    allowedRoutes:
+      namespaces:
+        from: Same # Autorise uniquement les routes définies dans le même namespace

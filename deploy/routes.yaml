@@ -1,0 +1,41 @@
+# --- Route pour l'API Backend ---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jedy-api-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: jedy-gateway # Attache cette route à notre Gateway 'jedy-gateway'
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /api # Intercepte tout trafic commençant par /api
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: / # Remplace /api par / avant d'envoyer au backend (ex: /api/users -> /users)
+    backendRefs:
+    - name: back-cluster-ip-service # Redirige vers le Service du backend
+      port: 4000
+---
+# --- Route pour le Frontend ---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jedy-front-route
+  namespace: default
+spec:
+  parentRefs:
+  - name: jedy-gateway # Attache cette route à notre Gateway 'jedy-gateway'
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: / # Intercepte tout le reste du trafic (racine)
+    backendRefs:
+    - name: front-cluster-ip-service # Redirige vers le Service du frontend
+      port: 4321

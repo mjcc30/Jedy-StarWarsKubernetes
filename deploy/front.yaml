@@ -1,0 +1,47 @@
+---
+# --- Déploiement du Frontend (Astro SSR) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-deployment
+spec:
+  replicas: 3 # Haute disponibilité
+  selector:
+    matchLabels:
+      component: front
+  template:
+    metadata:
+      labels:
+        component: front
+    spec:
+      containers:
+        - name: client
+          # Image Docker optimisée pour la production
+          image: jedy-starwarskubernetes-front:latest 
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4321
+          resources: # Définition des ressources pour éviter les problèmes de "noisy neighbor"
+            requests:
+              cpu: "100m" # Requête de 0.1 CPU
+              memory: "128Mi" # Requête de 128 MB de mémoire
+            limits:
+              cpu: "200m" # Limite à 0.2 CPU
+              memory: "256Mi" # Limite à 256 MB de mémoire
+          # Chargement des variables d'environnement globales depuis le ConfigMap
+          envFrom:
+            - configMapRef:
+                name: jedy-config
+---
+# --- Service Interne pour le Frontend ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-cluster-ip-service
+spec:
+  type: ClusterIP # Accessible uniquement à l'intérieur du cluster
+  selector:
+    component: front
+  ports:
+    - port: 4321
+      targetPort: 4321

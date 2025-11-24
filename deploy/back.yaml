@@ -1,0 +1,53 @@
+---
+# --- Déploiement du Backend (API Python) ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-deployment
+spec:
+  replicas: 3 # Nombre de répliques pour la haute disponibilité
+  selector:
+    matchLabels:
+      component: back
+  template:
+    metadata:
+      labels:
+        component: back
+    spec:
+      containers:
+        - name: server
+          # Image Docker optimisée pour la production
+          image: jedy-starwarskubernetes-back:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+          # Chargement de toute la configuration (ConfigMaps et Secrets) via envFrom
+          envFrom:
+            - configMapRef:
+                name: jedy-config
+            - secretRef:
+                name: pgpassword
+            - secretRef:
+                name: google-api-key
+            - secretRef:
+                name: jwt-secret
+--- 
+# --- Service Interne pour le Backend ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-cluster-ip-service
+spec:
+  type: ClusterIP # Accessible uniquement à l'intérieur du cluster
+  selector:
+    component: back
+  ports:
+    - port: 4000 # Port exposé par le Service
+      targetPort: 4000 # Port du conteneur cible

@@ -1,6 +1,13 @@
-FROM node:16-alpine
-WORKDIR "/app"
-COPY package.json .
-RUN npm install
+FROM node:24-alpine AS runtime
+WORKDIR /app
+
 COPY . .
-CMD ["npm", "start"]
+
+RUN npm install
+RUN npm run build
+
+ENV HOST=0.0.0.0
+ENV PORT=4321
+EXPOSE 4321
+
+CMD ["node", "./dist/server/entry.mjs"]

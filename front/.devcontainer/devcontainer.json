@@ -1,0 +1,19 @@
+{
+	"name": "Frontend Dev Container",
+	"dockerComposeFile": [
+		"../../compose.yaml"
+	],
+	"service": "front",
+	"workspaceFolder": "/app",
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"astro-build.astro-vscode"
+			]
+		}
+	},
+	"forwardPorts": [
+		4321
+	],
+	"postCreateCommand": "npm install"
+}

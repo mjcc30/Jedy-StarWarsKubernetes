@@ -1,0 +1,11 @@
+services:
+  back:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.prod
+    volumes: []
+  front:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.prod
+    volumes: []
