@@ -34,9 +34,9 @@ services:
     restart: "on-failure"
     tty: true
     stdin_open: true
-    volumes:
-      - ./front:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./front:/app
+    #   - /app/node_modules
     ports:
       - "4321:4321"
     environment:

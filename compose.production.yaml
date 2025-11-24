@@ -7,5 +7,6 @@ services:
   front:
     build:
       context: ./front
-      dockerfile: Dockerfile.prod
-    volumes: []
+      dockerfile: Dockerfile
+    ports:
+      - "8080:4321"

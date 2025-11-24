@@ -17,9 +17,9 @@ COPY . .
 RUN npm run build
 
 FROM base AS runtime
-WORKDIR /app
 
 # Copy built application
+COPY --from=build --chown=node:node /app/.astro ./.astro
 COPY --from=build --chown=node:node /app/dist ./dist
 # Copy production node_modules
 COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
