@@ -1,8 +1,8 @@
 apiVersion: v1
-kind: ConfigMap
+kind: ConfigMap # Non-sensitive configuration for the application
 metadata:
-  name: jedy-config
-  namespace: default
+  name: back-configmap
+  namespace: starwars
 data:
   # --- Backend Configuration ---
   ROOT_PATH: "/api"

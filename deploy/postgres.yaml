@@ -3,13 +3,14 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: database-persistent-volume-claim
-# k8s doit trouver une instance de stockage qui répond aux exigences
+  namespace: starwars
+# k8s must find a storage instance that meets the requirements
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      # Trouver une instance de stockage qui a 2g
+      # Find a storage instance that has 2Gi
       storage: 2Gi
 --- 
 apiVersion: apps/v1
@@ -26,12 +27,12 @@ spec:
       labels:
         component: postgres
     spec:
-      # Spécifie le volume utilisé pour stocker la donnée
+      # Specifies the volume used to store data
       volumes:
         - name: postgres-storage
-          # Spécifie que l'on va utiliser un volume PVC
+          # Specifies that a PVC volume will be used
           persistentVolumeClaim:
-            # Correspond au nom spécifié dans le fichier database-persistent-volume-claim
+            # Matches the name specified in the database-persistent-volume-claim file
             claimName: database-persistent-volume-claim
       containers:
         - name: postgres
@@ -45,14 +46,14 @@ spec:
             limits:
               memory: "512Mi"
               cpu: "500m"
-          # Indique dans quel dossier du container la donnée doit être stockée
+          # Indicates in which container folder the data should be stored
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/Data
-          # Variables d'environnements
+          # Environment variables
           env:
             - name: POSTGRES_PASSWORD
-              # Indique que l'on souhaite récupérer la valeur PGPASSWORD du Secret appelé pgpassword
+              # Indicates that we want to retrieve the PGPASSWORD value from the Secret named pgpassword
               valueFrom:
                 secretKeyRef:
                   name: pgpassword
@@ -62,6 +63,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres-cluster-ip-service
+  namespace: starwars
 spec:
   type: ClusterIP
   selector:

@@ -1,17 +1,17 @@
-# --- Configuration de la Gateway (Porte d'entrée) ---
+# --- Gateway Configuration ---
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
   name: jedy-gateway
-  namespace: default
+  namespace: starwars
 spec:
-  # Spécifie la classe de Gateway à utiliser. 'eg' correspond à Envoy Gateway que nous avons installé.
-  # C'est ce lien qui dit à Kubernetes "Utilise Envoy pour gérer cette porte d'entrée".
+  # Specifies the Gateway class to use. 'eg' corresponds to Envoy Gateway that we installed.
+  # This link tells Kubernetes "Use Envoy to manage this gateway".
   gatewayClassName: eg 
   listeners:
   - name: http
     protocol: HTTP
-    port: 80 # Le port exposé sur votre localhost (via le LoadBalancer du cluster)
+    port: 80 # The port exposed on your localhost (via the cluster LoadBalancer)
     allowedRoutes:
       namespaces:
-        from: Same # Autorise uniquement les routes définies dans le même namespace
+        from: Same # Allows only routes defined in the same namespace

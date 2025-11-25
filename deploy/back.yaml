@@ -1,11 +1,12 @@
 ---
-# --- Déploiement du Backend (API Python) ---
+# --- Backend Deployment (Python API) ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: back-deployment
+  namespace: starwars
 spec:
-  replicas: 3 # Nombre de répliques pour la haute disponibilité
+  replicas: 3 # Number of replicas for high availability
   selector:
     matchLabels:
       component: back
@@ -16,7 +17,7 @@ spec:
     spec:
       containers:
         - name: server
-          # Image Docker optimisée pour la production
+          # Docker image optimized for production
           image: jedy-starwarskubernetes-back:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -28,26 +29,29 @@ spec:
             limits:
               cpu: "200m"
               memory: "256Mi"
-          # Chargement de toute la configuration (ConfigMaps et Secrets) via envFrom
+          # Loading all configuration (ConfigMaps and Secrets) via envFrom
           envFrom:
             - configMapRef:
-                name: jedy-config
+                name: back-configmap
             - secretRef:
                 name: pgpassword
-            - secretRef:
-                name: google-api-key
+            # - secretRef:
+            #     name: google-api-key # Uncomment if using Google API
+            # - secretRef:
+            #     name: openrouter-api-key # Uncomment if using OpenRouter API
             - secretRef:
                 name: jwt-secret
 --- 
-# --- Service Interne pour le Backend ---
+# --- Internal Service for Backend ---
 apiVersion: v1
 kind: Service
 metadata:
   name: back-cluster-ip-service
+  namespace: starwars
 spec:
-  type: ClusterIP # Accessible uniquement à l'intérieur du cluster
+  type: ClusterIP # Accessible only inside the cluster
   selector:
     component: back
   ports:
-    - port: 4000 # Port exposé par le Service
-      targetPort: 4000 # Port du conteneur cible
+    - port: 4000 # Port exposed by the Service
+      targetPort: 4000 # Target container port
