@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-deployment
+  namespace: starwars
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: front
+  template:
+    metadata:
+      labels:
+        component: front
+    spec:
+      containers:
+        - name: client
+          image: jedy-starwarskubernetes-front:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4321
+          env:
+            - name: REACT_APP_API_ENTRYPOINT
+              value: "/api"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: front-service
+  namespace: starwars
+spec:
+  type: NodePort # Simple access for beginners
+  selector:
+    component: front
+  ports:
+    - port: 80
+      targetPort: 4321
+      nodePort: 30000
