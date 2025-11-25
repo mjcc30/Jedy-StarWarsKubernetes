@@ -10,6 +10,7 @@ API_ENTRYPOINT = os.getenv("API_ENTRYPOINT")
 
 router = APIRouter()
 
+
 @router.get("/search")
 async def search_swapi(resource: str, query: str):
     async with httpx.AsyncClient() as client:
@@ -18,4 +19,7 @@ async def search_swapi(resource: str, query: str):
             response.raise_for_status()
             return response.json()
         except httpx.HTTPStatusError as exc:
-            raise HTTPException(status_code=exc.response.status_code, detail=f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.")
+            raise HTTPException(
+                status_code=exc.response.status_code,
+                detail=f"Error response {exc.response.status_code} while requesting {exc.request.url!r}.",
+            )

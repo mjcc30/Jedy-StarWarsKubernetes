@@ -7,9 +7,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
+
 def get_session():
     with Session(engine) as session:
         yield session
+
 
 @router.post("/signup", response_model=User)
 def create_user(user: UserCreate, session: Session = Depends(get_session)):
@@ -23,8 +25,12 @@ def create_user(user: UserCreate, session: Session = Depends(get_session)):
     session.refresh(db_user)
     return db_user
 
+
 @router.post("/signin")
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
+def login_for_access_token(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(get_session),
+):
     user = session.exec(select(User).where(User.username == form_data.username)).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
