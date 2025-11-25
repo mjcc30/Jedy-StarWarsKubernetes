@@ -6,7 +6,8 @@ metadata:
   namespace: starwars
 spec:
   parentRefs:
-  - name: jedy-gateway # Attaches this route to our 'jedy-gateway'
+  - name: infra-gateway # Attaches this route to our 'infra-gateway'
+    namespace: gateways # Specifies that the Gateway is in the 'gateways' namespace
   rules:
   - matches:
     - path:
@@ -30,7 +31,8 @@ metadata:
   namespace: starwars
 spec:
   parentRefs:
-  - name: jedy-gateway # Attaches this route to our 'jedy-gateway'
+  - name: infra-gateway # Attaches this route to our 'infra-gateway'
+    namespace: gateways # Specifies that the Gateway is in the 'gateways' namespace
   rules:
   - matches:
     - path:
