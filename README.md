@@ -27,6 +27,23 @@ When you deploy this stack on a local Kubernetes cluster (like Docker Desktop, K
     - **`/` (root)**: All other traffic is routed to the **Frontend** service (`front-cluster-ip-service`).
 4. **Access**: When you visit `http://localhost` in your browser, your request hits the Envoy Proxy, which matches the route and forwards it to the Frontend Pod. When the frontend makes API calls to `/api/...`, Envoy routes them to the Backend Pod.
 
+## Automation (Justfile)
+
+This project uses [just](https://github.com/casey/just) to automate common tasks. It replaces long `docker` or `kubectl` commands.
+
+**Common Commands:**
+
+| Command | Description |
+| :--- | :--- |
+| `just dev` | Start local development (Docker Compose) |
+| `just deploy` | Deploy everything to Kubernetes |
+| `just restart` | Restart all pods (updates config/images) |
+| `just dashboard-token` | Generate token for K8s Dashboard |
+| `just load-test` | Start a load test to trigger Autoscaling |
+| `just logs-back` | View Backend logs |
+
+Run `just` to see the full list of available commands.
+
 ## Local Development (Docker Compose)
 
 You can run the entire stack locally without Kubernetes using Docker Compose.
@@ -59,6 +76,7 @@ docker compose -f compose.yaml -f compose.production.yaml up --build
 - [Docker Compose](https://docs.docker.com/compose/)
 - [Kubernetes](https://kubernetes.io/) (Docker Desktop with Kubernetes enabled is recommended)
 - [Helm](https://helm.sh/docs/intro/install/) (for installing Envoy Gateway)
+- [Just](https://github.com/casey/just) (Command Runner - Optional but recommended)
 
 ### Installation & Deployment
 
@@ -88,13 +106,13 @@ Create the necessary secrets (Database & Google Gemini API):
 
 ```bash
 # Create secret for JWT token session
-kubectl create secret generic jwt-secret --from-literal=JWT_SECRET=MyBestSecret
+kubectl create -n starwars secret generic jwt-secret --from-literal=JWT_SECRET=MyBestSecret
 # Create secret for pgsql password
-kubectl create secret generic pgpassword --from-literal=PGPASSWORD=star_wars_password
+kubectl create -n starwars secret generic pgpassword --from-literal=PGPASSWORD=star_wars_password
 # Replace with your actual Gemini API Key
-kubectl create secret generic google-api-key --from-literal=GOOGLE_API_KEY=AIzaSy...
+kubectl create -n starwars secret generic google-api-key --from-literal=GOOGLE_API_KEY=AIzaSy...
 # Or Open Router
-kubectl create secret generic openrouter-api-key --from-literal=OPENROUTER_API_KEY=sk-or-v1...
+kubectl create -n starwars secret generic openrouter-api-key --from-literal=OPENROUTER_API_KEY=sk-or-v1...
 ```
 
 Apply the Gateway Class (links K8s Gateway API to Envoy):
@@ -103,20 +121,27 @@ Apply the Gateway Class (links K8s Gateway API to Envoy):
 kubectl apply -f deploy/gatewayclass.yaml
 ```
 
-Apply the ConfigMap (Application Configuration):
+Apply the Shared Gateway (Infrastructure):
 
 ```bash
-kubectl apply -f deploy/configmap.yaml
+kubectl apply -f deploy/gateway-infra.yaml
 ```
 
-Deploy the entire stack (Database, Backend, Frontend, Gateway, Routes):
+Apply the ConfigMaps (Application Configuration):
+
+```bash
+kubectl apply -f deploy/back-configmap.yaml
+kubectl apply -f deploy/front-configmap.yaml
+```
+
+Deploy the entire stack (Database, Backend, Frontend, Routes, Dashboard):
 
 ```bash
 kubectl apply -f deploy/postgres.yaml
 kubectl apply -f deploy/back.yaml
 kubectl apply -f deploy/front.yaml
-kubectl apply -f deploy/gateway.yaml
 kubectl apply -f deploy/routes.yaml
+kubectl apply -f deploy/dashboard-route.yaml
 ```
 
 ### CI/CD Pipeline
@@ -136,7 +161,7 @@ You must configure the following **Secrets** in your GitHub Repository settings:
 Once all pods are running (`kubectl get pods`), you can access the application at:
 
 - **App**: [http://localhost](http://localhost)
-- **API Docs**: [http://localhost/api/docs](http://localhost/api/docs)
+- **API Docs**: [http://localhost/akpi/docs](http://localhost/api/docs)
 
 ### Production Images
 
@@ -167,8 +192,8 @@ If you modify the code, you need to rebuild the Docker images and force Kubernet
     This command forces the deployment to pick up the new image (if the tag hasn't changed) or apply configuration changes.
 
     ```bash
-    kubectl rollout restart deployment back-deployment
-    kubectl rollout restart deployment front-deployment
+    kubectl -n starwars rollout restart deployment back-deployment
+    kubectl -n starwars rollout restart deployment front-deployment
     ```
 
 3. **Check Rollout Status:**
@@ -176,17 +201,56 @@ If you modify the code, you need to rebuild the Docker images and force Kubernet
     Verify that the new pods are successfully starting.
 
     ```bash
-    kubectl rollout status deployment back-deployment
-    kubectl rollout status deployment front-deployment
+    kubectl -n starwars rollout status deployment back-deployment
+    kubectl -n starwars rollout status deployment front-deployment
     ```
 
+### Kubernetes Dashboard
+
+For a visual overview of your cluster, use the official Kubernetes Dashboard.
+
+**1. Installation**
+```bash
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+# Enable HTTP on port 80 for Gateway routing
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard \
+  --set kong.proxy.http.enabled=true \
+  --set kong.proxy.http.servicePort=80 \
+  --set kong.proxy.http.containerPort=8000
+
+kubectl apply -f deploy/dashboard-admin.yaml
+```
+
+**2. Access**
+**Option A: Via Gateway (Recommended)**
+Go to **[http://localhost/dashboard](http://localhost/dashboard)**
+
+**Option B: Via Port-Forward**
+```bash
+kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443
+```
+Open **[https://localhost:8443](https://localhost:8443)**.
+
+**3. Login**
+Generate an admin token:
+```bash
+kubectl -n kubernetes-dashboard create token admin-user
+```
+
 ### Monitoring & Logs
+
+- **Check Deployment Status:**
+    See if Deployment are `Running`, `Pending`, or in `CrashLoopBackoff`.
+
+    ```bash
+    kubectl get deployment -n starwars
+    ```
 
 - **Check Pod Status:**
     See if pods are `Running`, `Pending`, or in `CrashLoopBackoff`.
 
     ```bash
-    kubectl get pods
+    kubectl get pods -n starwars
     ```
 
 - **View Logs:**
@@ -195,10 +259,10 @@ If you modify the code, you need to rebuild the Docker images and force Kubernet
 
     ```bash
     # Backend Logs
-    kubectl logs -l component=back --tail=100 -f
+    kubectl logs -n starwars -l component=back --tail=100 -f
     
     # Frontend Logs
-    kubectl logs -l component=front --tail=100 -f
+    kubectl logs -n starwars -l component=front --tail=100 -f
     
     # Envoy Gateway Logs (System)
     kubectl logs -n envoy-gateway-system -l app.kubernetes.io/name=envoy-gateway
