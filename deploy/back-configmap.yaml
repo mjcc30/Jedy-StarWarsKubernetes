@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap # Non-sensitive configuration for the application
 metadata:
-  name: back-configmap
+  name: back-configmap # ConfigMap for backend settings
   namespace: starwars
 data:
   # --- Backend Configuration ---
