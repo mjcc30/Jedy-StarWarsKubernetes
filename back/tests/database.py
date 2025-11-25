@@ -5,11 +5,12 @@ import os
 DATABASE_URL = "sqlite://"
 
 engine = create_engine(
-    DATABASE_URL, 
-    connect_args={"check_same_thread": False}, 
-    poolclass=StaticPool, 
-    echo=True
+    DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+    echo=True,
 )
+
 
 def get_session():
     # Create tables for the in-memory db if they don't exist
