@@ -1,47 +1,107 @@
-# Astro Starter Kit: Minimal
+# Jedy-StarWarsKubernetes Frontend
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+This is the frontend client for the Jedy-StarWarsKubernetes project, built with [Astro](https://astro.build/). It interacts with the backend API to fetch Star Wars data and handle user authentication.
 
-## 🚀 Project Structure
+## Features
 
-Inside of your Astro project, you'll see the following folders and files:
+- **Search**: Search for Star Wars resources (people, planets, starships, etc.) via the backend proxy.
+- **Authentication**: User registration and login functionality.
+- **Server-Side Rendering (SSR)**: Uses Astro's Node.js adapter for dynamic content rendering.
+- **Styling**: Styled with Tailwind CSS for a modern and responsive UI.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+## Project Structure
+
+- `src/pages`: Contains the application routes (`index.astro`, `login.astro`, `register.astro`).
+- `src/components`: Reusable UI components (`Header.astro`, `Search.astro`).
+- `src/layouts`: Main layout wrapper (`Layout.astro`).
+- `public`: Static assets (favicon, 3D models).
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v20 or later)
+- npm
+
+### Installation
+
+1. Install dependencies:
+
+    ```bash
+    npm install
+    ```
+
+### Running Locally
+
+To start the development server:
+
+```bash
+npm run dev
 ```
 
-## 🧞 Commands
+The application will be available at `http://localhost:4321`.
 
-All commands are run from the root of the project, from a terminal:
+### Building for Production
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+To build the application for production:
 
-## 🚀 Initialization
-
-To create this project from scratch, run the following command in the parent directory:
-
-```sh
-docker run -it --rm -v "${PWD}/front:/app" -w /app node:20-alpine npm create astro@latest .
+```bash
+npm run build
 ```
 
-or
+The output will be in the `dist/` directory. You can preview the build with:
 
-```sh
-npm create astro@latest -- --template minimal
+```bash
+npm run preview
 ```
 
-## 👀 Want to learn more?
+## Docker Management
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### Build and Run
+
+To build and run the frontend using Docker:
+
+```bash
+# Build the image
+docker build -t jedy-front .
+
+# Run the container
+docker run -p 4321:4321 jedy-front
+```
+
+### Build without Cache
+
+To force a clean rebuild (ignoring cached layers):
+
+```bash
+docker build --no-cache -t jedy-front .
+```
+
+### Debugging & Logs
+
+**View Logs:**
+
+```bash
+docker logs -f <container_id>
+# If using compose:
+docker compose logs -f front
+```
+
+**Access Container Shell:**
+Since this image is based on Alpine Linux, use `/bin/sh`:
+
+```bash
+docker exec -it <container_id> /bin/sh
+# If using compose:
+docker compose exec front /bin/sh
+```
+
+## Environment Variables
+
+The application relies on the following environment variables:
+
+- `PUBLIC_API_URL`: The URL of the backend API (default: `/api` when running behind the Gateway/Ingress).
+
+## Learn More
+
+To learn more about Astro, check out the [Astro Documentation](https://docs.astro.build).
