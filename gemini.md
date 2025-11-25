@@ -6,11 +6,11 @@ This document provides a detailed analysis of the Jedy-StarWarsKubernetes projec
 
 This project is a full-stack web application built with a modern technology stack. It consists of three main components:
 
-1.  **A frontend client** built with Astro.
+1.  **A frontend client** built with Astro (SSR).
 2.  **A backend API** developed with Python and FastAPI.
 3.  **A PostgreSQL database** for data persistence.
 
-The entire application is designed to be containerized using Docker and orchestrated with both Docker Compose for local development and Kubernetes for production deployment. The application serves as a proxy to the public Star Wars API (SWAPI) and includes user management features.
+The entire application is designed to be containerized using Docker and orchestrated with both Docker Compose for local development (and production preview) and Kubernetes for production deployment. The application serves as a proxy to the public Star Wars API (SWAPI), includes user management features, and integrates generative AI capabilities.
 
 ## 2. Technologies Used
 
@@ -18,115 +18,74 @@ The entire application is designed to be containerized using Docker and orchestr
   - **Framework**: FastAPI
   - **Language**: Python
   - **Database ORM**: SQLModel
+  - **Package Manager**: `uv` (for fast builds)
   - **Authentication**: JWT (JSON Web Tokens) with `python-jose` and `passlib`.
+  - **AI**: Google Gemini 2.5 (Flash/Nano Banana) & OpenRouter.
   - **Testing**: `pytest`, `httpx`
-  - **Dependencies**: `uvicorn`, `psycopg2-binary`, `httpx`.
 
 - **Frontend**:
-  - **Framework**: Astro
+  - **Framework**: Astro (Node.js Adapter)
   - **Language**: TypeScript/JavaScript
+  - **Styling**: Tailwind CSS
   - **Package Manager**: npm
 
 - **Database**:
-  - PostgreSQL
+  - PostgreSQL 16
 
 - **Containerization & Orchestration**:
-  - **Containerization**: Docker
+  - **Containerization**: Docker (Multi-stage builds)
   - **Local Orchestration**: Docker Compose
   - **Production Orchestration**: Kubernetes
+  - **Ingress/Routing**: Kubernetes Gateway API (Envoy Gateway)
 
 ## 3. Architecture
 
-The application follows a microservices architecture, with a clear separation between the frontend, backend, and database.
+The application follows a microservices architecture.
 
 ### Backend
 
 The backend is a FastAPI application that exposes a RESTful API. Its responsibilities include:
--   **User Management**: Handling user registration and login (`/users` route).
--   **SWAPI Proxy**: Fetching data from the external Star Wars API (`https://swapi.dev/api`) and exposing it through its own endpoints (`/swapi` route). This acts as a backend-for-frontend (BFF) pattern.
--   **Database Interaction**: Using SQLModel to interact with the PostgreSQL database for storing user data.
+-   **User Management**: Handling user registration and login (`/users`).
+-   **SWAPI Proxy**: Fetching data from SWAPI and caching/enhancing it.
+-   **AI Services**: providing Chat and Image generation endpoints (`/ai`).
+-   **Database Interaction**: Storing user and image cache data.
 
 ### Frontend
 
-The frontend is a dynamic website built with Astro. It communicates with the backend API to fetch data and handle user interactions. It is configured to make API calls to the backend service.
+The frontend is a dynamic website built with Astro (Server-Side Rendering). It fetches data from the backend API to render pages.
 
 ### Database
 
-A PostgreSQL database is used to store application data, primarily user information. The `compose.yaml` and `k8s/postgres.yaml` files define how the database is run and how its data is persisted using Docker volumes or Kubernetes PersistentVolumeClaims.
+A PostgreSQL database stores user credentials and cached AI images.
 
 ## 4. Deployment
 
-The project is configured for two deployment environments: local development with Docker Compose and production with Kubernetes.
+### Docker Compose (`compose.yaml` & `compose.production.yaml`)
 
-### Docker Compose (`compose.yaml`)
+-   **`database`**: `postgres:16-alpine`.
+-   **`back`**: Python/FastAPI service (Port 4000).
+-   **`front`**: Astro Node.js service (Port 4321 in dev, 8080 in prod preview).
 
-This file orchestrates the services for a local development environment:
--   **`database` service**: Runs a `postgres:16-alpine` image. It persists data in a named volume called `database`.
--   **`back` service**: Builds the backend Docker image from `./back/Dockerfile`. It connects to the `database` service and exposes port 4000.
--   **`front` service**: Builds the frontend Docker image from `./front/Dockerfile`. It depends on the `back` service and exposes port 3000.
+### Kubernetes (`deploy/`)
 
-### Kubernetes (`k8s/`)
+The `deploy` directory contains Kubernetes manifests:
 
-The `k8s` directory contains the configuration files for deploying the application to a Kubernetes cluster.
-
--   **`postgres.yaml`**:
-    -   `PersistentVolumeClaim`: Requests persistent storage for the database to ensure data is not lost if the pod restarts.
-    -   `Deployment`: Manages the PostgreSQL pod. It uses a secret (`pgpassword`) to manage the database password securely.
-    -   `Service`: Creates a `ClusterIP` service (`postgres-cluster-ip-service`) to allow the backend to communicate with the database within the cluster.
-
--   **`back.yaml`**:
-    -   `Deployment`: Deploys the backend application with 3 replicas for high availability.
-    -   `Service`: Creates a `ClusterIP` service (`back-cluster-ip-service`) to expose the backend internally.
-
--   **`front.yaml`**:
-    -   `Deployment`: Deploys the frontend application with 3 replicas.
-    -   `Service`: Creates a `ClusterIP` service (`front-cluster-ip-service`) to expose the frontend internally.
-
--   **`ingress.yaml`**:
-    -   `Ingress`: Manages external access to the application using an Nginx Ingress Controller.
-    -   It routes traffic based on the URL path:
-        -   Requests to `/api/?(.*)` are routed to the backend service (`back-cluster-ip-service`). The `rewrite-target` annotation removes the `/api` prefix before forwarding the request.
-        -   All other requests (`/?(.*)`) are routed to the frontend service (`front-cluster-ip-service`).
+-   **`gateway.yaml` & `routes.yaml`**: Uses the Gateway API (Envoy) to route traffic.
+    -   `/api/*` -> Backend Service
+    -   `/*` -> Frontend Service
+-   **`postgres.yaml`**: Database Deployment + PVC.
+-   **`back.yaml`**: Backend Deployment + Service.
+-   **`front.yaml`**: Frontend Deployment + Service.
+-   **`configmap.yaml` & `gatewayclass.yaml`**: Configuration and Gateway setup.
 
 ## 5. How to Run the Project
 
-### Using Docker Compose (Local Development)
-
-1.  **Prerequisites**: Docker and Docker Compose installed.
-2.  **Build and Run**: From the root of the project, run the following command:
-    ```bash
-    docker-compose up --build
-    ```
-- **Access**:
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:4000`
+See `README.md` for detailed instructions on:
+-   Local Development (`docker compose up`)
+-   Production Preview (`docker compose -f ...`)
+-   Kubernetes Deployment (`kubectl apply ...`)
 
 ## 6. Testing
 
-The backend of the project includes a comprehensive testing suite built with `pytest` and `httpx`. The tests are organized in the `back/tests` directory and follow a Test-Driven Development (TDD) approach.
-
-### Running the Tests
-
-To run the tests, execute the following command from the root of the project:
-
-```bash
-docker-compose exec back pytest
-```
-
-The tests are configured to run against a separate, in-memory SQLite database to ensure test isolation and prevent interference with the development database.
-
-
-### Using Kubernetes (Production)
-
-1.  **Prerequisites**: A running Kubernetes cluster (e.g., Minikube, Docker Desktop Kubernetes, or a cloud provider) and `kubectl` configured. An Ingress controller (like Nginx) must be installed in the cluster.
-2.  **Create Secret**: The backend requires a database password secret. Create it with the following command:
-    ```bash
-    kubectl create secret generic pgpassword --from-literal=PGPASSWORD=<your-postgres-password>
-    ```
-3.  **Apply Configurations**: Apply all the Kubernetes configuration files from the `k8s` directory:
-    ```bash
-    kubectl apply -f k8s/
-    ```
-4.  **Access**:
-    -   Find the IP address of your Ingress controller. If using Minikube, you can run `minikube ip`.
-    -   Access the application at the Ingress IP address. The frontend will be at `/` and the API at `/api`.
+The backend includes a TDD suite using `pytest`.
+Run tests via: `docker compose exec back pytest`
