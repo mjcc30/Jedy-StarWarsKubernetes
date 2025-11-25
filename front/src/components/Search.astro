@@ -33,7 +33,10 @@ import { Icon } from "astro-icon/components";
   <!-- Results Area -->
   <div id="results-container" class="min-h-[200px]">
     <div class="text-center text-gray-500 italic mt-10">
-      <Icon name="mdi:database-search" class="w-16 h-16 mx-auto mb-4 opacity-50" />
+      <Icon
+        name="mdi:database-search"
+        class="w-16 h-16 mx-auto mb-4 opacity-50"
+      />
       <p>Select a category and enter a search term to begin.</p>
     </div>
   </div>
@@ -102,10 +105,10 @@ import { Icon } from "astro-icon/components";
 
   // --- AI Status ---
   let aiEnabled = false;
-  
+
   (async () => {
     try {
-      const res = await fetch('/api/ai/status');
+      const res = await fetch("/api/ai/status");
       if (res.ok) {
         const data = await res.json();
         aiEnabled = data.enabled;
@@ -128,7 +131,10 @@ import { Icon } from "astro-icon/components";
     const query = searchInput.value.trim();
 
     if (!query) {
-      showMessage("Please enter a search term to query the archives.", "warning");
+      showMessage(
+        "Please enter a search term to query the archives.",
+        "warning"
+      );
       return;
     }
 
@@ -201,7 +207,7 @@ import { Icon } from "astro-icon/components";
             // We can't render actual Astro components in client-side JS strings easily without hydration,
             // so we'll use a simple span with a class that we can potentially map to icons via CSS or just use text labels for now.
             // *Correction*: To keep it simple and robust, we will use text labels styled nicely.
-            
+
             return `
               <div class="flex flex-col p-2 bg-white/5 rounded hover:bg-white/10 transition-colors">
                 <span class="text-xs text-gray-400 uppercase tracking-wider mb-1">${label}</span>
@@ -215,28 +221,29 @@ import { Icon } from "astro-icon/components";
         // We delegate generation to our Backend (Gemini Nano Banana / Cache)
         const imageUrl = `/api/ai/image?name=${encodeURIComponent(item.name)}&type=${resourceType}`;
 
-        const chatButtonHtml = (resourceType === 'people' && aiEnabled)
-          ? `<button onclick="openChat('${item.name.replace(/'/g, "\\'")}', '${encodeURIComponent(JSON.stringify(item)).replace(/'/g, "\\'")}')" class="btn btn-sm bg-yellow-400 text-black border-none w-full mt-4 font-orbitron hover:bg-yellow-300">
+        const chatButtonHtml =
+          resourceType === "people" && aiEnabled
+            ? `<button onclick="openChat('${item.name.replace(/'/g, "\\'")}', '${encodeURIComponent(JSON.stringify(item)).replace(/'/g, "\\'")}')" class="btn btn-sm bg-yellow-400 text-black border-none w-full mt-4 font-orbitron hover:bg-yellow-300">
                <span class="mr-2">💬</span> COMMUNICATE
-             </button>` 
-          : '';
-        
+             </button>`
+            : "";
+
         const regenerateButtonHtml = aiEnabled
-             ? `<button 
-                 onclick="refreshImage('${item.name.replace(/'/g, "\\'")}', '${resourceType}', 'img-${item.name.replace(/\s/g, '-')}')"
+          ? `<button 
+                 onclick="refreshImage('${item.name.replace(/'/g, "\\'")}', '${resourceType}', 'img-${item.name.replace(/\s/g, "-")}')"
                  class="absolute top-2 right-2 btn btn-xs btn-circle bg-black/50 border-white/20 text-white hover:bg-yellow-400 hover:text-black opacity-0 group-hover/image:opacity-100 transition-opacity"
                  title="Regenerate Visual"
                >
                  <span class="text-xs">↻</span>
                </button>`
-             : '';
+          : "";
 
         return `
           <div class="sw-card relative group flex flex-col h-full">
             <!-- Image Container with Skeleton Background -->
             <div class="relative h-48 overflow-hidden border-b border-white/10 bg-gray-800 animate-pulse group/image">
                <img 
-                 id="img-${item.name.replace(/\s/g, '-')}"
+                 id="img-${item.name.replace(/\s/g, "-")}"
                  src="${imageUrl}" 
                  alt="${item.name}" 
                  class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-0"
@@ -279,33 +286,34 @@ import { Icon } from "astro-icon/components";
 
   // --- Image Refresh Logic ---
   window.refreshImage = (name, type, imgId) => {
-      const imgEl = document.getElementById(imgId);
-      if(!imgEl) return;
-      
-      // Reset loading state
-      imgEl.classList.add('opacity-0');
-      imgEl.parentElement.classList.add('animate-pulse', 'bg-gray-800');
-      
-      // Force reload with timestamp and refresh flag
-      const timestamp = new Date().getTime();
-      imgEl.src = `/api/ai/image?name=${encodeURIComponent(name)}&type=${type}&force_refresh=true&t=${timestamp}`;
+    const imgEl = document.getElementById(imgId);
+    if (!imgEl) return;
+
+    // Reset loading state
+    imgEl.classList.add("opacity-0");
+    imgEl.parentElement.classList.add("animate-pulse", "bg-gray-800");
+
+    // Force reload with timestamp and refresh flag
+    const timestamp = new Date().getTime();
+    imgEl.src = `/api/ai/image?name=${encodeURIComponent(name)}&type=${type}&force_refresh=true&t=${timestamp}`;
   };
 
   // --- Chat Functionality ---
   // Make function globally available so onclick works
   window.openChat = (name, itemDataEncoded) => {
-    const dialog = document.getElementById('chat_modal');
-    const title = document.getElementById('chat_character_name');
-    const messages = document.getElementById('chat_messages');
+    const dialog = document.getElementById("chat_modal");
+    const title = document.getElementById("chat_character_name");
+    const messages = document.getElementById("chat_messages");
     const itemData = JSON.parse(decodeURIComponent(itemDataEncoded));
-    
+
     // Reset chat
-    if(title) title.innerText = name;
-    if(messages) messages.innerHTML = `
+    if (title) title.innerText = name;
+    if (messages)
+      messages.innerHTML = `
       <div class="chat chat-start">
         <div class="chat-image avatar">
           <div class="w-10 rounded-full border border-yellow-400">
-            <img alt="${name}" src="https://pollinations.ai/p/${encodeURIComponent('star wars ' + name)}?width=100&height=100&nologo=true" />
+            <img alt="${name}" src="https://pollinations.ai/p/${encodeURIComponent("star wars " + name)}?width=100&height=100&nologo=true" />
           </div>
         </div>
         <div class="chat-header text-yellow-400 mb-1">
@@ -315,86 +323,95 @@ import { Icon } from "astro-icon/components";
         <div class="chat-bubble bg-white/10 text-gray-200 border border-white/20">Greetings. I am ${name}. What do you seek?</div>
       </div>
     `;
-    
+
     // Store context
     window.currentCharacterContext = `Name: ${name}. Details: ${JSON.stringify(itemData)}.`;
     window.currentCharacterName = name;
 
-    if(dialog) dialog.showModal();
+    if (dialog) dialog.showModal();
   };
 
   // Send Message logic
-  const chatInput = document.getElementById('chat_input');
-  const sendBtn = document.getElementById('chat_send_btn');
-  
+  const chatInput = document.getElementById("chat_input");
+  const sendBtn = document.getElementById("chat_send_btn");
+
   async function sendMessage() {
     const msg = chatInput.value.trim();
-    if(!msg) return;
-    
-    const messages = document.getElementById('chat_messages');
-    
+    if (!msg) return;
+
+    const messages = document.getElementById("chat_messages");
+
     // User Message
-    messages.insertAdjacentHTML('beforeend', `
+    messages.insertAdjacentHTML(
+      "beforeend",
+      `
       <div class="chat chat-end">
         <div class="chat-bubble bg-yellow-400 text-black font-semibold">${msg}</div>
       </div>
-    `);
-    
-    chatInput.value = '';
+    `
+    );
+
+    chatInput.value = "";
     messages.scrollTop = messages.scrollHeight; // Auto scroll
-    
+
     // Loading state
-    const loadingId = 'loading-' + Date.now();
-    messages.insertAdjacentHTML('beforeend', `
+    const loadingId = "loading-" + Date.now();
+    messages.insertAdjacentHTML(
+      "beforeend",
+      `
       <div id="${loadingId}" class="chat chat-start">
         <div class="chat-bubble bg-white/10 text-gray-400 animate-pulse">...thinking...</div>
       </div>
-    `);
+    `
+    );
     messages.scrollTop = messages.scrollHeight;
 
     try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-             throw new Error("No active session. Please login.");
-        }
-        
-        const headers = { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        };
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No active session. Please login.");
+      }
 
-        const response = await fetch('/api/ai/chat', {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify({
-                character_name: window.currentCharacterName,
-                character_context: window.currentCharacterContext,
-                message: msg
-            })
-        });
-        
-        // Remove loading
-        const loadingEl = document.getElementById(loadingId);
-        if(loadingEl) loadingEl.remove();
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error("Session expired. Please login again.");
-            }
-            const errData = await response.json();
-            throw new Error(errData.detail || "Communication error.");
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify({
+          character_name: window.currentCharacterName,
+          character_context: window.currentCharacterContext,
+          message: msg,
+        }),
+      });
+
+      // Remove loading
+      const loadingEl = document.getElementById(loadingId);
+      if (loadingEl) loadingEl.remove();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Session expired. Please login again.");
         }
-        
-        const data = await response.json();
-        
-        // AI Response
-        const aiResponse = data.response || "Static interference... (No response data)";
-        
-        messages.insertAdjacentHTML('beforeend', `
+        const errData = await response.json();
+        throw new Error(errData.detail || "Communication error.");
+      }
+
+      const data = await response.json();
+
+      // AI Response
+      const aiResponse =
+        data.response || "Static interference... (No response data)";
+
+      messages.insertAdjacentHTML(
+        "beforeend",
+        `
           <div class="chat chat-start">
             <div class="chat-image avatar">
               <div class="w-10 rounded-full border border-yellow-400">
-                <img alt="${window.currentCharacterName}" src="https://pollinations.ai/p/${encodeURIComponent('star wars ' + window.currentCharacterName)}?width=100&height=100&nologo=true" />
+                <img alt="${window.currentCharacterName}" src="https://pollinations.ai/p/${encodeURIComponent("star wars " + window.currentCharacterName)}?width=100&height=100&nologo=true" />
               </div>
             </div>
             <div class="chat-header text-yellow-400 mb-1">
@@ -402,53 +419,80 @@ import { Icon } from "astro-icon/components";
             </div>
             <div class="chat-bubble bg-white/10 text-gray-200 border border-white/20">${aiResponse}</div>
           </div>
-        `);
-        messages.scrollTop = messages.scrollHeight;
-        
-    } catch(e) {
-        console.error(e);
-        const loadingEl = document.getElementById(loadingId);
-        if(loadingEl) loadingEl.remove();
-        
-        messages.insertAdjacentHTML('beforeend', `
+        `
+      );
+      messages.scrollTop = messages.scrollHeight;
+    } catch (e) {
+      console.error(e);
+      const loadingEl = document.getElementById(loadingId);
+      if (loadingEl) loadingEl.remove();
+
+      messages.insertAdjacentHTML(
+        "beforeend",
+        `
             <div class="alert alert-error text-xs mt-2">
                 <span>${e.message || "Connection lost."}</span>
             </div>
-        `);
-        messages.scrollTop = messages.scrollHeight;
+        `
+      );
+      messages.scrollTop = messages.scrollHeight;
     }
   }
 
-  if(sendBtn) sendBtn.addEventListener('click', sendMessage);
-  if(chatInput) chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
-  });
-
+  if (sendBtn) sendBtn.addEventListener("click", sendMessage);
+  if (chatInput)
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
 </script>
 
 <!-- Chat Modal -->
-<dialog id="chat_modal" class="modal modal-bottom sm:modal-middle backdrop-blur-sm">
-  <div class="modal-box glass-panel border border-yellow-400/30 p-0 overflow-hidden flex flex-col max-h-[80vh]">
+<dialog
+  id="chat_modal"
+  class="modal modal-bottom sm:modal-middle backdrop-blur-sm"
+>
+  <div
+    class="modal-box glass-panel border border-yellow-400/30 p-0 overflow-hidden flex flex-col max-h-[80vh]"
+  >
     <!-- Header -->
-    <div class="bg-yellow-400/10 p-4 border-b border-yellow-400/20 flex justify-between items-center">
-      <h3 class="font-orbitron text-xl text-yellow-400 font-bold flex items-center gap-2">
+    <div
+      class="bg-yellow-400/10 p-4 border-b border-yellow-400/20 flex justify-between items-center"
+    >
+      <h3
+        class="font-orbitron text-xl text-yellow-400 font-bold flex items-center gap-2"
+      >
         <Icon name="mdi:forum" class="w-6 h-6" />
-        COM-LINK: <span id="chat_character_name" class="text-white">Target</span>
+        COM-LINK: <span id="chat_character_name" class="text-white">Target</span
+        >
       </h3>
       <form method="dialog">
-        <button class="btn btn-sm btn-circle btn-ghost text-white hover:text-red-400">✕</button>
+        <button
+          class="btn btn-sm btn-circle btn-ghost text-white hover:text-red-400"
+          >✕</button
+        >
       </form>
     </div>
-    
+
     <!-- Messages -->
-    <div id="chat_messages" class="flex-grow p-4 overflow-y-auto min-h-[300px] space-y-4 bg-black/40">
-       <!-- Dynamic Content -->
+    <div
+      id="chat_messages"
+      class="flex-grow p-4 overflow-y-auto min-h-[300px] space-y-4 bg-black/40"
+    >
+      <!-- Dynamic Content -->
     </div>
-    
+
     <!-- Input -->
     <div class="p-4 bg-white/5 border-t border-white/10 flex gap-2">
-      <input id="chat_input" type="text" placeholder="Type your transmission..." class="input input-bordered flex-grow bg-black/50 text-white border-yellow-400/30 focus:border-yellow-400 focus:outline-none" />
-      <button id="chat_send_btn" class="btn bg-yellow-400 text-black hover:bg-yellow-300 border-none">
+      <input
+        id="chat_input"
+        type="text"
+        placeholder="Type your transmission..."
+        class="input input-bordered flex-grow bg-black/50 text-white border-yellow-400/30 focus:border-yellow-400 focus:outline-none"
+      />
+      <button
+        id="chat_send_btn"
+        class="btn bg-yellow-400 text-black hover:bg-yellow-300 border-none"
+      >
         <Icon name="mdi:send" class="w-5 h-5" />
       </button>
     </div>
