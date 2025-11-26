@@ -52,79 +52,33 @@ kubectl get hpa -n starwars --watch
 
 ```
 
-
-
 ### Testing Autoscaling (Load Test)
-
-
 
 To verify the HPA, we use **K6** to simulate realistic traffic.
 
-
-
-
-
-
-
 1. **Start Load Generator:**
 
-
-
 ```bash
-
-
 
 just load-test
 
-
-
 ```
-
-
 
 *(This runs a K6 job inside the cluster targeting `http://back-cluster-ip-service:4000/`)*
 
-
-
-
-
-
-
 2. **Observe Scaling:**
-
-
 
 Run `kubectl get hpa -n starwars --watch`. You will see the CPU load increase (e.g., `200%/50%`) and the `REPLICAS` count go up.
 
-
-
-
-
-
-
 3. **Stop Test:**
-
-
 
 The test stops automatically, or force stop with:
 
-
-
 ```bash
-
-
-
 just stop-load
-
-
-
 ```
 
-
-
 *Note: The cluster will take a few minutes (cooldown period) to scale back down.*
-
-
 
 ## Resilience & Health Checks
 
@@ -140,15 +94,15 @@ To ensure high availability and **Zero Downtime Deployments**, the `Deployment` 
 
 - **Purpose**: Checks if the application is still alive and functioning.
 - **Behavior**: If this probe fails (e.g., deadlock, infinite loop), Kubernetes restarts the container automatically.
-*   **Result**: Self-healing application.
+- **Result**: Self-healing application.
 
 ## Startup Robustness (InitContainers)
 
 To prevent the Backend from crashing if the Database is not yet ready (common during full stack deployments), `back.yaml` includes an **InitContainer**.
 
-*   **Mechanism**: A lightweight `busybox` container runs before the main application.
-*   **Action**: It loops checking the connectivity to the Postgres database (`nc -z $PGHOST $PGPORT`).
-*   **Outcome**: The main application container **only starts** once the database connection is confirmed.
+- **Mechanism**: A lightweight `busybox` container runs before the main application.
+- **Action**: It loops checking the connectivity to the Postgres database (`nc -z $PGHOST $PGPORT`).
+- **Outcome**: The main application container **only starts** once the database connection is confirmed.
 
 ## Kubernetes Dashboard
 

@@ -27,7 +27,11 @@ spec:
       containers:
         - name: server
           image: jedy-starwarskubernetes-back:latest # Docker image optimized for production
-          imagePullPolicy: IfNotPresent # Pull the image only if not present
+          # ⚠️ CRITICAL:
+          # Use 'IfNotPresent' or 'Never' for local development with Docker Desktop.
+          # This forces K8s to look for the image on your local machine first,
+          # instead of trying to pull it from a remote registry (like Docker Hub) and failing.
+          imagePullPolicy: IfNotPresent 
           ports:
             - containerPort: 4000 # Port where the backend listens
           # Resource requests and limits for efficient resource management

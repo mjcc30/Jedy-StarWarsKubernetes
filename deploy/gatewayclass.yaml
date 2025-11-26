@@ -1,5 +1,8 @@
 apiVersion: gateway.networking.k8s.io/v1
 kind: GatewayClass
+# The GatewayClass is the "Template" or "Blueprint".
+# It tells Kubernetes *which* software controller (in this case, Envoy) 
+# should be responsible for managing the Gateways created from this class.
 metadata:
   name: eg
   namespace: starwars

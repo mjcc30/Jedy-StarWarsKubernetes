@@ -4,14 +4,14 @@ Thank you for your interest in contributing to this project!
 
 ## How to Contribute
 
-1.  **Fork the repository** and create your branch from `main`.
-2.  **Clone the repository** locally.
-3.  **Install dependencies** and set up the environment (see `README.md`).
-4.  **Make your changes**.
-5.  **Run tests** to ensure no regressions:
+1. **Fork the repository** and create your branch from `main`.
+2. **Clone the repository** locally.
+3. **Install dependencies** and set up the environment (see `README.md`).
+4. **Make your changes**.
+5. **Run tests** to ensure no regressions:
     - Backend: `docker compose exec back pytest`
-6.  **Commit your changes** with clear commit messages.
-7.  **Push to your fork** and submit a Pull Request.
+6. **Commit your changes** with clear commit messages.
+7. **Push to your fork** and submit a Pull Request.
 
 ## Coding Standards
 

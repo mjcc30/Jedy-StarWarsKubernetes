@@ -56,7 +56,9 @@ spec:
                   key: PGPASSWORD
             - name: PGDATA
               value: /var/lib/postgresql/data/postgres-db # Explicit data directory
-  # Volume Claim Template: Automatically creates a PVC for each replica
+  # Volume Claim Template: Automatically creates a PersistentVolumeClaim (PVC) for each replica.
+  # Unlike a Deployment, which shares volumes or is stateless, a StatefulSet ensures
+  # each Pod gets its own dedicated, persistent storage that survives Pod restarts.
   volumeClaimTemplates:
     - metadata:
         name: postgres-storage
