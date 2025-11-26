@@ -6,9 +6,9 @@ This document provides a detailed analysis of the Jedy-StarWarsKubernetes projec
 
 This project is a full-stack web application built with a modern technology stack. It consists of three main components:
 
-1.  **A frontend client** built with Astro (SSR).
-2.  **A backend API** developed with Python and FastAPI.
-3.  **A PostgreSQL database** for data persistence.
+1. **A frontend client** built with Astro (SSR).
+2. **A backend API** developed with Python and FastAPI.
+3. **A PostgreSQL database** for data persistence.
 
 The entire application is designed to be containerized using Docker and orchestrated with both Docker Compose for local development (and production preview) and Kubernetes for production deployment. The application serves as a proxy to the public Star Wars API (SWAPI), includes user management features, and integrates generative AI capabilities.
 
@@ -45,10 +45,11 @@ The application follows a microservices architecture.
 ### Backend
 
 The backend is a FastAPI application that exposes a RESTful API. Its responsibilities include:
--   **User Management**: Handling user registration and login (`/users`).
--   **SWAPI Proxy**: Fetching data from SWAPI and caching/enhancing it.
--   **AI Services**: providing Chat and Image generation endpoints (`/ai`).
--   **Database Interaction**: Storing user and image cache data.
+
+- **User Management**: Handling user registration and login (`/users`).
+- **SWAPI Proxy**: Fetching data from SWAPI and caching/enhancing it.
+- **AI Services**: providing Chat and Image generation endpoints (`/ai`).
+- **Database Interaction**: Storing user and image cache data.
 
 ### Frontend
 
@@ -62,28 +63,29 @@ A PostgreSQL database stores user credentials and cached AI images.
 
 ### Docker Compose (`compose.yaml` & `compose.production.yaml`)
 
--   **`database`**: `postgres:16-alpine`.
--   **`back`**: Python/FastAPI service (Port 4000).
--   **`front`**: Astro Node.js service (Port 4321 in dev, 8080 in prod preview).
+- **`database`**: `postgres:16-alpine`.
+- **`back`**: Python/FastAPI service (Port 4000).
+- **`front`**: Astro Node.js service (Port 4321 in dev, 8080 in prod preview).
 
 ### Kubernetes (`deploy/`)
 
 The `deploy` directory contains Kubernetes manifests:
 
--   **`gateway.yaml` & `routes.yaml`**: Uses the Gateway API (Envoy) to route traffic.
-    -   `/api/*` -> Backend Service
-    -   `/*` -> Frontend Service
--   **`postgres.yaml`**: Database Deployment + PVC.
--   **`back.yaml`**: Backend Deployment + Service.
--   **`front.yaml`**: Frontend Deployment + Service.
--   **`configmap.yaml` & `gatewayclass.yaml`**: Configuration and Gateway setup.
+- **`gateway.yaml` & `routes.yaml`**: Uses the Gateway API (Envoy) to route traffic.
+  - `/api/*` -> Backend Service
+  - `/*` -> Frontend Service
+- **`postgres.yaml`**: Database Deployment + PVC.
+- **`back.yaml`**: Backend Deployment + Service.
+- **`front.yaml`**: Frontend Deployment + Service.
+- **`configmap.yaml` & `gatewayclass.yaml`**: Configuration and Gateway setup.
 
 ## 5. How to Run the Project
 
 See `README.md` for detailed instructions on:
--   Local Development (`docker compose up`)
--   Production Preview (`docker compose -f ...`)
--   Kubernetes Deployment (`kubectl apply ...`)
+
+- Local Development (`docker compose up`)
+- Production Preview (`docker compose -f ...`)
+- Kubernetes Deployment (`kubectl apply ...`)
 
 ## 6. Testing
 
