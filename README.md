@@ -49,6 +49,7 @@ Run `just` to see the full list of available commands.
 You can run the entire stack locally without Kubernetes using Docker Compose.
 
 ### Development Mode
+
 Best for coding. Hot-reloading is enabled.
 
 ```bash
@@ -59,6 +60,7 @@ docker compose up --build
 - **API**: [http://localhost:4000](http://localhost:4000)
 
 ### Production Preview
+
 Simulates the production build (optimized images, no hot-reload).
 
 ```bash
@@ -210,6 +212,7 @@ If you modify the code, you need to rebuild the Docker images and force Kubernet
 For a visual overview of your cluster, use the official Kubernetes Dashboard.
 
 **1. Installation**
+
 ```bash
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
 # Enable HTTP on port 80 for Gateway routing
@@ -226,9 +229,11 @@ kubectl apply -f deploy/dashboard-admin.yaml
 Go to **[http://localhost/dashboard](http://localhost/dashboard)**
 
 **Option B: Via Port-Forward**
+
 ```bash
 kubectl -n kubernetes-dashboard port-forward svc/kubernetes-dashboard-kong-proxy 8443:443
 ```
+
 Open **[https://localhost:8443](https://localhost:8443)**.
 
 **3. Login**
